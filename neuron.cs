@@ -5,18 +5,26 @@ namespace NeuralNetworks{
 
     public class Neuron{
 
-        private double _bias;
         private List<double> _weights;
-        private double _weightSum;
-        private double _output = double.MinValue;
+        private double _delta;
+        private double _output;
+        private double _bias;
+        private double _lambda = 6;
+        private double _learnRate = 0.5;
 
+        //default constructor: only called for input neurons
+        public Neuron(){
+            _weights = new List<double>();
+            _weights.Add(1.0);
+        }
+        
+        //overload constructor for all other layers
         public Neuron(int numberInputs){
 
             //Set up tracking of the input weights
             //Begin by assigning random weights
             
             _weights = new List<double>();
-            _weightSum = 0;
 
             for(int i = 0; i < numberInputs; i++){
 
@@ -25,22 +33,22 @@ namespace NeuralNetworks{
 
         }
 
-        public void FeedForward(List<double> inputs){
+        public void FeedForward(List<double> inputs, bool isInput){
 
             double sum = 0.0;
 
             for(int i = 0; i < inputs.Count; i++){
-                
-                Console.WriteLine("input " + (i+1).ToString() + " = " + inputs[i].ToString());
 
-                sum += inputs[i] * _weights[i];
-
-                //Console.WriteLine("sum = " + sum.ToString());
-                
-                _output = TransferFunction(sum);
-                
+                sum += inputs[i] * _weights[i]; 
             }
-            
+            //Console.WriteLine(sum);
+
+            if(!isInput){
+                _output = TransferFunction(sum);
+            }
+            else{
+                _output = sum;
+            }
             
         }
 
@@ -48,7 +56,7 @@ namespace NeuralNetworks{
         //Could possibly generalise this using a delegate?
         private double TransferFunction(double input){
 
-            return 1 / (1 + Math.Exp(input));
+            return 1 / (1 + Math.Exp(-_lambda * (input + _bias)));
 
         }
 
@@ -59,10 +67,36 @@ namespace NeuralNetworks{
 
         }
 
+
         public double Output(){
             
             return _output;
         }
+
+        public void ComputeDelta(double value){
+
+            _delta = _output * (1 - _output) * value;
+        }
+
+        public double WeightedDelta(int idx){
+
+            return _delta * _weights[idx];
+        }
+
+
+        public void AdjustWeights(List<double> input){
+
+            for(int i = 0; i < _weights.Count; i++){
+
+                _weights[i] += input[i] * _delta * _learnRate;
+
+            }
+
+            _bias += _delta * _learnRate;
+            
+            
+        }
+
 
     }
 

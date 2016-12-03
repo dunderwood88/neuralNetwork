@@ -8,14 +8,27 @@ namespace ConsoleApplication{
 
         public static void Main(string[] args){
             
-            Net network = new Net(new int[]{2,3,1});
+            Net network = new Net(new int[]{2,2,1});
+           
+            List<double[]> inputs = new List<double[]>();
+            List<double> expectedValues = new List<double>();
 
-            List<double> inputs = new List<double>();
+            //inputs.Add(new double[] {0,1});
+            //expectedValues.Add(1);
 
-            inputs.Add(1.2);
-            inputs.Add(1.6);
+            inputs.Add(new double[] {0,0});
+            inputs.Add(new double[] {0,1});
+            inputs.Add(new double[] {1,0});
+            inputs.Add(new double[] {1,1});
 
-            network.FeedForward(inputs);
+            expectedValues.Add(0);
+            expectedValues.Add(1);
+            expectedValues.Add(1);
+            expectedValues.Add(0);
+
+
+            network.Learn(inputs, expectedValues);
+            
 
             
         }

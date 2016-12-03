@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NeuralNetworks{
 
@@ -18,28 +19,44 @@ namespace NeuralNetworks{
                 
                 Console.WriteLine("Layer " + (i + 1).ToString());
 
-                int prevLayerRank;
-
-                //if we are on the first layer, set the rank of the "previous" layer to 1 (i.e. 1 input per neuron)
+                //if we are on the first layer, there is no previous layer to pass rank for
                 if(i == 0){
-                    prevLayerRank = 1;
+                    _layers.Add(new Layer(structure[i]));
                 } 
                 else{
-                    prevLayerRank = structure[i-1];
+                    _layers.Add(new Layer(structure[i], structure[i-1]));
                 }
-
-                _layers.Add(new Layer(structure[i], prevLayerRank));
 
             }
 
+        }
+
+        public void Learn(List<double[]> inputs, List<double> expectedValues){
+
+            for(int i = 0; i < 500; i++){
+
+                Console.WriteLine("Epoch " + (i + 1).ToString());
+                
+                for(int x = 0; x < inputs.Count; x++){
+
+                    List<double> valueSet = inputs[x].ToList();
+                    List<double> expectedVals = new List<double>();
+                    expectedVals.Add(expectedValues[x]);
+
+                    FeedForward(valueSet);
+                    BackPropagation(expectedVals);
+                    
+                }
+            }
+            
         }
 
 
         //Initialises the feedforward process
         public void FeedForward(List<double> inputValues){
 
-            Console.WriteLine();
-            Console.WriteLine("Feeding forward...");
+            //Console.WriteLine();
+            //Console.WriteLine("Feeding forward...");
 
 
             if(inputValues.Count != _layers[0].Size()){
@@ -55,18 +72,16 @@ namespace NeuralNetworks{
                 List<double> inputAsList = new List<double>(); 
                 inputAsList.Add(inputValues[i]);
 
-                _layers[0].FeedNeurons(i, inputAsList);
+                _layers[0].FeedNeurons(i, inputAsList, true);
             }   
 
             //Forward propagation
 
             for(int layerNum = 1; layerNum < _layers.Count; layerNum++){
 
-                Console.WriteLine("Layer " + (layerNum + 1).ToString());
-
                 for(int i = 0; i < _layers[layerNum].Size(); i++){
 
-                    _layers[layerNum].FeedNeurons(i, _layers[layerNum - 1].Outputs());
+                    _layers[layerNum].FeedNeurons(i, _layers[layerNum - 1].Outputs(), false);
 
                 }
 
@@ -75,11 +90,51 @@ namespace NeuralNetworks{
             //Print the final outputs
             foreach(double o in _layers[_layers.Count - 1].Outputs()){
 
-                Console.WriteLine(o.ToString());
+                Console.WriteLine("Output: " + o.ToString());
 
             }
 
         }
+
+        //Back propagation
+        public void BackPropagation(List<double> targetValues){
+
+            //output layer
+            //for each neuron in output layer
+                //calculate outputValue - targetValue
+                //multiply by derivative of activation function to obtain delta value
+            _layers[_layers.Count - 1].ComputeDeltas(targetValues);
+
+            //Console.WriteLine("Backprop of layer " + _layers.Count + " done");
+
+            //hidden layers
+            //for each neuron in hidden layer i
+                //sum all of (deltas * weights[i]) of the next layer, where weights[i] is the weight connecting the current neuron
+                //to that of the next layer
+                //multiply this sum by derivative of activation function to obtain delta value
+            for(int i = _layers.Count - 2; i > 0; i--){
+
+                    //for each neuron in the current layer
+                    for(int j = 0; j < _layers[i + 1].Size(); j++){
+
+                        _layers[i].ComputeDeltas(_layers[i + 1].SumWeightedDeltas(j));
+
+                    }
+                    
+                    //Console.WriteLine("Backprop of layer " + (i + 1).ToString() + " done");
+            }
+            
+            //repeat up to input layer
+
+            //Adjust weights
+            for(int i = _layers.Count - 1; i > 0; i--){
+
+                _layers[i].AdjustLayerWeights(_layers[i - 1].Outputs());
+
+            }
+
+        }
+
 
     }
 
