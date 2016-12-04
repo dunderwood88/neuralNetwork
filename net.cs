@@ -4,16 +4,31 @@ using System.Linq;
 
 namespace NeuralNetworks{
 
-    public class Net{
+    public class FeedForwardNet{
 
+        private int _maxIterations;
+        private int _iteration;
         private List<Layer> _layers;
 
+        //Various overloads for the constructor depending on specified inputs, default if missing
+        public FeedForwardNet(int[] structure){
+            NetSetup(structure, 500, 0.5);
+        }
 
-        public Net(int[] structure){
+        public FeedForwardNet(int[] structure, int iter){
+            NetSetup(structure, iter, 0.5);
+        }
+
+        public FeedForwardNet(int[] structure, int iter, double learnRate){
+            NetSetup(structure, iter, learnRate);
+        }
+
+        public void NetSetup(int[] structure, int iter, double learnRate){
             
-            Console.WriteLine("Creating neural network of " + structure.Length.ToString() + " layers");
+            Console.WriteLine("Creating feed forward neural network of " + structure.Length.ToString() + " layers");
 
             _layers = new List<Layer>();
+            _maxIterations = iter;
 
             for(int i = 0; i < structure.Length; i++){
                 
@@ -27,16 +42,17 @@ namespace NeuralNetworks{
                     _layers.Add(new Layer(structure[i], structure[i-1]));
                 }
 
+                _layers[i].SetParams(learnRate);
+
             }
 
         }
 
         public void Learn(List<double[]> inputs, List<double> expectedValues){
 
-            for(int i = 0; i < 500; i++){
+            for(int i = 0; i < _maxIterations; i++){
 
-                Console.WriteLine("Epoch " + (i + 1).ToString());
-                
+                Console.WriteLine("Epoch " + (_iteration + 1).ToString());                
                 for(int x = 0; x < inputs.Count; x++){
 
                     List<double> valueSet = inputs[x].ToList();
@@ -45,10 +61,14 @@ namespace NeuralNetworks{
 
                     FeedForward(valueSet);
                     BackPropagation(expectedVals);
-                    
+                }
+
+                _iteration++;
+                if(_iteration > _maxIterations){
+                    Console.WriteLine("Could not converge, try again");
+                    return;
                 }
             }
-            
         }
 
 
@@ -105,8 +125,6 @@ namespace NeuralNetworks{
                 //multiply by derivative of activation function to obtain delta value
             _layers[_layers.Count - 1].ComputeDeltas(targetValues);
 
-            //Console.WriteLine("Backprop of layer " + _layers.Count + " done");
-
             //hidden layers
             //for each neuron in hidden layer i
                 //sum all of (deltas * weights[i]) of the next layer, where weights[i] is the weight connecting the current neuron
@@ -116,23 +134,16 @@ namespace NeuralNetworks{
 
                     //for each neuron in the current layer
                     for(int j = 0; j < _layers[i + 1].Size(); j++){
-
                         _layers[i].ComputeDeltas(_layers[i + 1].SumWeightedDeltas(j));
-
                     }
-                    
-                    //Console.WriteLine("Backprop of layer " + (i + 1).ToString() + " done");
             }
             
             //repeat up to input layer
 
             //Adjust weights
             for(int i = _layers.Count - 1; i > 0; i--){
-
                 _layers[i].AdjustLayerWeights(_layers[i - 1].Outputs());
-
             }
-
         }
 
 

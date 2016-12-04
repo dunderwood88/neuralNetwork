@@ -17,12 +17,9 @@ namespace NeuralNetworks{
             _outputs = new List<double>();
 
             for(int i = 0; i < rank; i++){
-
                 Console.WriteLine("Adding neuron " + (i + 1).ToString());
                 _neurons.Add(new Neuron());
-
             }
-
         }
 
         //overload constructor called for all other layers
@@ -33,17 +30,13 @@ namespace NeuralNetworks{
             _outputs = new List<double>();
 
             for(int i = 0; i < rank; i++){
-
                 Console.WriteLine("Adding neuron " + (i + 1).ToString());
                 _neurons.Add(new Neuron(prevRank));
-
             }
-
         }
 
         //Assigns input values into i'th neuron
-        public void FeedNeurons(int i, List<double> inputs, bool isInput){
-            
+        public void FeedNeurons(int i, List<double> inputs, bool isInput){         
             _neurons[i].FeedForward(inputs, isInput);
         }
 
@@ -63,23 +56,17 @@ namespace NeuralNetworks{
         public void ComputeDeltas(List<double> targetValues){
 
             for(int i = 0; i < _neurons.Count; i++){
-
                 Console.WriteLine(targetValues[i] - _neurons[i].Output());
                 _neurons[i].ComputeDelta(targetValues[i] - _neurons[i].Output());
-
             }
-
         }
 
         //Overload method for all hidden layers
         public void ComputeDeltas(double summedWeightedDeltas){
 
             foreach(Neuron neuron in _neurons){
-
                 neuron.ComputeDelta(summedWeightedDeltas);
-
             }
-
         }
 
         public double SumWeightedDeltas(int index){
@@ -87,21 +74,22 @@ namespace NeuralNetworks{
             double sum = 0.0;
 
             foreach(Neuron neuron in _neurons){
-
                 sum += neuron.WeightedDelta(index);
             }
-
-            //ComputeDeltas(sum);
             return sum;
         }
 
         public void AdjustLayerWeights(List<double> inputs){
 
             for(int i = 0; i < _rank; i++){
-
                 _neurons[i].AdjustWeights(inputs);
             }
+        }
 
+        public void SetParams(double learnRate){
+
+            foreach(Neuron n in _neurons)
+                n.SetParams(learnRate);
         }
 
     }

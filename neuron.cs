@@ -23,11 +23,9 @@ namespace NeuralNetworks{
 
             //Set up tracking of the input weights
             //Begin by assigning random weights
-            
             _weights = new List<double>();
 
             for(int i = 0; i < numberInputs; i++){
-
                 _weights.Add(Util.GetRandom() * 2 - 1);
             }
 
@@ -38,10 +36,8 @@ namespace NeuralNetworks{
             double sum = 0.0;
 
             for(int i = 0; i < inputs.Count; i++){
-
                 sum += inputs[i] * _weights[i]; 
             }
-            //Console.WriteLine(sum);
 
             if(!isInput){
                 _output = TransferFunction(sum);
@@ -49,22 +45,17 @@ namespace NeuralNetworks{
             else{
                 _output = sum;
             }
-            
         }
 
         
         //Could possibly generalise this using a delegate?
         private double TransferFunction(double input){
-
             return 1 / (1 + Math.Exp(-_lambda * (input + _bias)));
-
         }
 
         //Could possibly generalise this using a delegate?
         private double TransferFunctionDerivative(double x){
-
             return TransferFunction(x) * (1 - TransferFunction(x));
-
         }
 
 
@@ -73,10 +64,12 @@ namespace NeuralNetworks{
             return _output;
         }
 
+
         public void ComputeDelta(double value){
 
             _delta = _output * (1 - _output) * value;
         }
+
 
         public double WeightedDelta(int idx){
 
@@ -87,14 +80,14 @@ namespace NeuralNetworks{
         public void AdjustWeights(List<double> input){
 
             for(int i = 0; i < _weights.Count; i++){
-
                 _weights[i] += input[i] * _delta * _learnRate;
-
             }
+            _bias += _delta * _learnRate;   
+        }
 
-            _bias += _delta * _learnRate;
-            
-            
+
+        public void SetParams(double learnRate){
+            _learnRate = learnRate;
         }
 
 
