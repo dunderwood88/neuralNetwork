@@ -14,4 +14,5 @@ Still to add:
 - Full functionality for multiple outputs;
 - Convergence threshold control;
 - Testing and accuracy methods;
+- Various dependency injections, generalisation and tidying up;
 - Probably a lot more...
