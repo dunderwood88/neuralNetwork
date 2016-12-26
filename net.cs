@@ -8,11 +8,13 @@ namespace NeuralNetworks{
 
         private int _maxIterations;
         private int _iteration;
+        private int _size;
+        private double _error;
         private List<Layer> _layers;
 
         //Various overloads for the constructor depending on specified inputs, default if missing
         public FeedForwardNet(int[] structure){
-            NetSetup(structure, 500, 0.5);
+            NetSetup(structure, 1500, 0.5);
         }
 
         public FeedForwardNet(int[] structure, int iter){
@@ -29,6 +31,7 @@ namespace NeuralNetworks{
 
             _layers = new List<Layer>();
             _maxIterations = iter;
+            _size = structure.Length;
 
             for(int i = 0; i < structure.Length; i++){
                 
@@ -48,36 +51,50 @@ namespace NeuralNetworks{
 
         }
 
-        public void Learn(List<double[]> inputs, List<double> expectedValues){
 
-            for(int i = 0; i < _maxIterations; i++){
+        public void Learn(List<double[]> inputs, List<double[]> expectedValues){
 
+            do{
+            //for(int i = 0; i < _maxIterations; i++){
+
+                _error = 0;
                 Console.WriteLine("Epoch " + (_iteration + 1).ToString());                
                 for(int x = 0; x < inputs.Count; x++){
 
                     List<double> valueSet = inputs[x].ToList();
                     List<double> expectedVals = new List<double>();
-                    expectedVals.Add(expectedValues[x]);
+                    double err = 0;
+
+                    foreach(double e in expectedValues[x]){
+                        expectedVals.Add(e);
+                    }
 
                     FeedForward(valueSet);
                     BackPropagation(expectedVals);
+
+                    //Feed back the total error
+                    for(int z = 0; z < expectedVals.Count; z++){
+                        err += Math.Pow((expectedVals[z] - _layers[_size - 1].Outputs()[z]),2);
+                    }
+                    _error += err;
+
                 }
+
+                Console.WriteLine("Error:" + _error);
 
                 _iteration++;
                 if(_iteration > _maxIterations){
                     Console.WriteLine("Could not converge, try again");
                     return;
                 }
-            }
+            }while (_error > 0.01);
+
+            Console.WriteLine("Converged with a total error of " + _error);
         }
 
 
         //Initialises the feedforward process
         public void FeedForward(List<double> inputValues){
-
-            //Console.WriteLine();
-            //Console.WriteLine("Feeding forward...");
-
 
             if(inputValues.Count != _layers[0].Size()){
                 Console.WriteLine("The number of input params does not equal the number of neurons");
@@ -111,7 +128,6 @@ namespace NeuralNetworks{
             foreach(double o in _layers[_layers.Count - 1].Outputs()){
 
                 Console.WriteLine("Output: " + o.ToString());
-
             }
 
         }
@@ -137,8 +153,6 @@ namespace NeuralNetworks{
                         _layers[i].ComputeDeltas(_layers[i + 1].SumWeightedDeltas(j));
                     }
             }
-            
-            //repeat up to input layer
 
             //Adjust weights
             for(int i = _layers.Count - 1; i > 0; i--){

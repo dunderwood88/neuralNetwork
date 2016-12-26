@@ -15,14 +15,14 @@ namespace NeuralNetworks{
 
         }
 
-        public static List<Pattern> LoadPatterns(string filename)
+        public static List<Pattern> LoadPatterns(string filename, int numInputs)
         {
             _patterns = new List<Pattern>();
             StreamReader file = File.OpenText(filename);
             while (!file.EndOfStream)
             {
                 string line = file.ReadLine();
-                _patterns.Add(new Pattern(line));
+                _patterns.Add(new Pattern(line, numInputs));
             }
             file.Dispose();
 
