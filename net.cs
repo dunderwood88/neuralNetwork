@@ -35,7 +35,7 @@ namespace NeuralNetworks{
 
 
 
-        public void NetSetup(int[] structure, int iter, double learnRate, double lambda, double thErr){
+        public void NetSetup(int[] structure, double learnRate, double lambda, int iter, double thErr){
             
             Console.WriteLine("Creating feed forward neural network of " + structure.Length.ToString() + " layers");
 
