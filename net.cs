@@ -14,23 +14,34 @@ namespace NeuralNetworks{
 
         //Various overloads for the constructor depending on specified inputs, default if missing
         public FeedForwardNet(int[] structure){
-            NetSetup(structure, 1500, 0.5);
+            NetSetup(structure, 0.5, 5, 2000, 0.01);
         }
 
-        public FeedForwardNet(int[] structure, int iter){
-            NetSetup(structure, iter, 0.5);
+        public FeedForwardNet(int[] structure, double learnRate){
+            NetSetup(structure, learnRate, 5, 2000, 0.01);
         }
 
-        public FeedForwardNet(int[] structure, int iter, double learnRate){
-            NetSetup(structure, iter, learnRate);
+        public FeedForwardNet(int[] structure, double learnRate, double lambda){
+            NetSetup(structure, learnRate, lambda, 2000, 0.01);
         }
 
-        public void NetSetup(int[] structure, int iter, double learnRate){
+        public FeedForwardNet(int[] structure, double learnRate, double lambda, int iter){
+            NetSetup(structure, learnRate, lambda, iter, 0.01);
+        }
+
+        public FeedForwardNet(int[] structure, double learnRate, double lambda, int iter, double thErr){
+            NetSetup(structure, learnRate, lambda, iter, thErr);
+        }
+
+
+
+        public void NetSetup(int[] structure, int iter, double learnRate, double lambda, double thErr){
             
             Console.WriteLine("Creating feed forward neural network of " + structure.Length.ToString() + " layers");
 
             _layers = new List<Layer>();
             _maxIterations = iter;
+            _error = thErr;
             _size = structure.Length;
 
             for(int i = 0; i < structure.Length; i++){
@@ -45,7 +56,7 @@ namespace NeuralNetworks{
                     _layers.Add(new Layer(structure[i], structure[i-1]));
                 }
 
-                _layers[i].SetParams(learnRate);
+                _layers[i].SetParams(learnRate, lambda);
 
             }
 
@@ -54,10 +65,11 @@ namespace NeuralNetworks{
 
         public void Learn(List<double[]> inputs, List<double[]> expectedValues){
 
-            do{
-            //for(int i = 0; i < _maxIterations; i++){
+            double errLoop;
 
-                _error = 0;
+            do{
+
+                errLoop = 0;
                 Console.WriteLine("Epoch " + (_iteration + 1).ToString());                
                 for(int x = 0; x < inputs.Count; x++){
 
@@ -76,25 +88,37 @@ namespace NeuralNetworks{
                     for(int z = 0; z < expectedVals.Count; z++){
                         err += Math.Pow((expectedVals[z] - _layers[_size - 1].Outputs()[z]),2);
                     }
-                    _error += err;
+                    errLoop += err;
 
                 }
 
-                Console.WriteLine("Error:" + _error);
+                Console.WriteLine("Error:" + errLoop);
 
                 _iteration++;
-                if(_iteration > _maxIterations){
+                if(_iteration > _maxIterations - 1){
                     Console.WriteLine("Could not converge, try again");
-                    return;
-                }
-            }while (_error > 0.01);
+                    Reinitialise();
+                    _iteration = 0;
 
-            Console.WriteLine("Converged with a total error of " + _error);
+                }
+            }while (errLoop > _error);
+
+            Console.WriteLine("Converged with a total error of " + errLoop);
+        }
+
+        private void Reinitialise(){
+
+            Console.WriteLine("Reinitialising...");
+
+            for(int x = 1; x <_layers.Count; x++){
+                _layers[x].Reinitialise();
+                //_layers[x].SetParams(learnRate, lambda);
+            }
         }
 
 
         //Initialises the feedforward process
-        public void FeedForward(List<double> inputValues){
+        private void FeedForward(List<double> inputValues){
 
             if(inputValues.Count != _layers[0].Size()){
                 Console.WriteLine("The number of input params does not equal the number of neurons");
@@ -113,7 +137,6 @@ namespace NeuralNetworks{
             }   
 
             //Forward propagation
-
             for(int layerNum = 1; layerNum < _layers.Count; layerNum++){
 
                 for(int i = 0; i < _layers[layerNum].Size(); i++){
@@ -127,13 +150,13 @@ namespace NeuralNetworks{
             //Print the final outputs
             foreach(double o in _layers[_layers.Count - 1].Outputs()){
 
-                Console.WriteLine("Output: " + o.ToString());
+                //Console.WriteLine("Output: " + o.ToString());
             }
 
         }
 
         //Back propagation
-        public void BackPropagation(List<double> targetValues){
+        private void BackPropagation(List<double> targetValues){
 
             //output layer
             //for each neuron in output layer

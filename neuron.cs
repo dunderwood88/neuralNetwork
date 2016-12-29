@@ -9,8 +9,8 @@ namespace NeuralNetworks{
         private double _delta;
         private double _output;
         private double _bias;
-        private double _lambda = 6;
-        private double _learnRate = 0.5;
+        private double _lambda;
+        private double _learnRate;
 
         //default constructor: only called for input neurons
         public Neuron(){
@@ -85,9 +85,17 @@ namespace NeuralNetworks{
             _bias += _delta * _learnRate;   
         }
 
+        public void Reinitialise(){
 
-        public void SetParams(double learnRate){
+            for(int i = 0; i < _weights.Count; i++){
+                _weights[i] = Util.GetRandom() * 2 - 1;
+            }
+        }
+
+
+        public void SetParams(double learnRate, double lambda){
             _learnRate = learnRate;
+            _lambda = lambda;
         }
 
 

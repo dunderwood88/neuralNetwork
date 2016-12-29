@@ -56,7 +56,6 @@ namespace NeuralNetworks{
         public void ComputeDeltas(List<double> targetValues){
 
             for(int i = 0; i < _neurons.Count; i++){
-                //Console.WriteLine(targetValues[i] - _neurons[i].Output());
                 _neurons[i].ComputeDelta(targetValues[i] - _neurons[i].Output());
             }
         }
@@ -86,10 +85,17 @@ namespace NeuralNetworks{
             }
         }
 
-        public void SetParams(double learnRate){
+        public void Reinitialise(){
+
+            foreach(Neuron n in _neurons){
+                n.Reinitialise();
+            }
+        }
+
+        public void SetParams(double learnRate, double lambda){
 
             foreach(Neuron n in _neurons)
-                n.SetParams(learnRate);
+                n.SetParams(learnRate, lambda);
         }
 
     }

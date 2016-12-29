@@ -8,6 +8,7 @@ namespace ConsoleApplication{
         public static void Main(string[] args){
             
             FeedForwardNet network = new FeedForwardNet(new int[]{2,2,1});
+            //FeedForwardNet network = new FeedForwardNet(new int[]{4,7,3});
            
             List<Pattern> patterns = new List<Pattern>();
             List<double[]> inputs = new List<double[]>();
@@ -15,8 +16,9 @@ namespace ConsoleApplication{
 
 
             //Load patterns
-            //patterns = Util.LoadPatterns("../../Desktop/pima-indians-diabetes.data.csv");
+            //patterns = Util.LoadPatterns("../../Desktop/pima-indians-diabetes.data.csv",8);
             patterns = Util.LoadPatterns("Patterns.csv",2);
+            //patterns = Util.LoadPatterns("iris.data.csv",4);
 
             foreach(Pattern p in patterns){
                 inputs.Add(p.Inputs());
